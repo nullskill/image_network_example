@@ -10,6 +10,14 @@ dependencies:
   flutter:
     sdk: flutter
 
+  bloc: ^8.1.4
+  flutter_bloc: ^8.1.6
+
+  equatable: ^2.0.5
+
+  http: ^1.2.2
+  path_provider: ^2.1.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
