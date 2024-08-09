@@ -71,7 +71,7 @@ class ProductListPage extends StatelessWidget {
   }
 }
 
-class ProductDetailPage extends StatelessWidget {
+class ProductDetailPage extends StatefulWidget {
   final Product product;
 
   const ProductDetailPage({
@@ -80,17 +80,63 @@ class ProductDetailPage extends StatelessWidget {
   });
 
   @override
+  State<ProductDetailPage> createState() => _ProductDetailPageState();
+}
+
+class _ProductDetailPageState extends State<ProductDetailPage> {
+  final ImageCache imageCache = PaintingBinding.instance.imageCache;
+
+  @override
+  void initState() {
+    super.initState();
+
+    PaintingBinding.instance.imageCache.maximumSize = 1000;
+    PaintingBinding.instance.imageCache.maximumSizeBytes = 100 << 20; // 100 MB
+  }
+
+  Future<void> addImageToCache() async {
+    final ImageProvider provider = NetworkImage(widget.product.imageUrl);
+    await precacheImage(provider, context);
+    print('Image added to cache');
+  }
+
+  void removeImageFromCache() {
+    final ImageProvider provider = NetworkImage(widget.product.imageUrl);
+    imageCache.evict(provider);
+    print('Image removed from cache');
+  }
+
+  void clearCache() {
+    imageCache.clear();
+    print('Cache cleared');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(product.title),
+        title: Text(widget.product.title),
       ),
       body: SingleChildScrollView(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          // crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            ElevatedButton(
+              onPressed: addImageToCache,
+              child: const Text('Add Image to Cache'),
+            ),
+            ElevatedButton(
+              onPressed: removeImageFromCache,
+              child: const Text('Remove Image from Cache'),
+            ),
+            ElevatedButton(
+              onPressed: clearCache,
+              child: const Text('Clear Cache'),
+            ),
             Image.network(
-              product.imageUrl,
+              widget.product.imageUrl,
+              // cacheWidth: 100,
+              // cacheHeight: 100,
               loadingBuilder: (context, child, loadingProgress) {
                 print('loadingProgress: ${loadingProgress != null ? loadingProgress.cumulativeBytesLoaded : 0}');
 
@@ -101,7 +147,7 @@ class ProductDetailPage extends StatelessWidget {
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.all(16),
-              child: Text(product.description),
+              child: Text(widget.product.description),
             ),
           ],
         ),
